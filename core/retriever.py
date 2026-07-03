@@ -4,13 +4,26 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.llm_client import ask_llm_json
-from core.prompts import SQL_GENERATION_PROMPT, SYNTHESIS_PROMPT
+from core.logger import logger
+from core.prompts import DECOMPOSE_PROMPT, SQL_GENERATION_PROMPT, SYNTHESIS_PROMPT
+
+
+async def decompose_query(user_query: str) -> list:
+    response = await ask_llm_json(system_prompt=DECOMPOSE_PROMPT, user_text=user_query)
+    try:
+        queries = json.loads(response).get("sub_queries", [user_query])
+        logger.info(f"Декомпозиция запроса: {queries}")
+        return queries
+    except Exception:
+        return [user_query]
 
 
 async def get_sql_from_query(user_query: str) -> str:
     response = await ask_llm_json(system_prompt=SQL_GENERATION_PROMPT, user_text=user_query)
     try:
-        return json.loads(response).get("sql_query", "")
+        sql = json.loads(response).get("sql_query", "")
+        logger.info(f"SQL: {sql}")
+        return sql
     except Exception:
         return ""
 
@@ -18,27 +31,85 @@ async def get_sql_from_query(user_query: str) -> str:
 async def execute_query(db: AsyncSession, sql_query: str) -> list:
     if not sql_query:
         return []
-    result = await db.execute(text(sql_query))
-    rows = result.fetchall()
-    return [dict(row._mapping) for row in rows]
+    try:
+        result = await db.execute(text(sql_query))
+        rows = result.fetchall()
+        results = []
+        for row in rows:
+            row_dict = dict(row._mapping)
+            if "source_file" in row_dict:
+                row_dict["источник"] = row_dict.pop("source_file")
+            results.append(row_dict)
+        return results
+    except Exception as e:
+        logger.error(f"SQL Error: {e}")
+        return []
+
+
+async def fallback_keyword_search(db: AsyncSession, query: str) -> list:
+    logger.info("Fallback search...")
+    words = [w.strip() for w in query.split() if len(w.strip()) > 3]
+    if not words:
+        return []
+
+    conditions = []
+    for word in words:
+        base_word = word[:-2] if len(word) > 4 else word
+        base_word = base_word.lower()
+        conditions.append(f"LOWER(material) LIKE '%{base_word}%'")
+        conditions.append(f"LOWER(process) LIKE '%{base_word}%'")
+        conditions.append(f"LOWER(outcome) LIKE '%{base_word}%'")
+
+    sql = f"SELECT * FROM facts WHERE {' OR '.join(conditions)} LIMIT 10"
+    return await execute_query(db, sql)
+
+
+def format_local_results(db_results: list) -> str:
+    text = "Вот что найдено в базе знаний:\n\n"
+    for i, row in enumerate(db_results, 1):
+        material = row.get("material", "Неизвестно")
+        process = row.get("process", "Неизвестно")
+        outcome = row.get("outcome", "Неизвестно")
+        source = row.get("источник", "Неизвестно")
+        text += f"{i}. **Материал**: {material} | **Процесс**: {process} | **Результат**: {outcome} *(Источник: {source})*\n\n"
+    return text
 
 
 async def synthesize_answer(user_query: str, db_results: list) -> str:
     if not db_results:
         return "Не найдено информации по вашему запросу."
 
-    context = str(db_results)
+    context = str(db_results)[:8000]
     response = await ask_llm_json(
-        system_prompt=SYNTHESIS_PROMPT, user_text=f"Вопрос: {user_query}\nДанные из БД: {context}"
+        system_prompt=SYNTHESIS_PROMPT, user_text=f"Вопрос: {user_query}\nДанные из базы: {context}"
     )
+
+    if not response or response.strip() == "{}" or response.strip() == "":
+        return format_local_results(db_results)
+
+    return response.strip()
+
+
+async def ask_question(db: AsyncSession, query: str) -> str:
     try:
-        return json.loads(response).get("answer", "")
-    except Exception:
-        return ""
+        sub_queries = await decompose_query(query)
+        all_results = []
+        seen_ids = set()
 
+        for sub_query in sub_queries:
+            sql = await get_sql_from_query(sub_query)
+            results = await execute_query(db, sql)
 
-async def ask_knowledge_base(user_query: str, db: AsyncSession) -> str:
-    sql_query = await get_sql_from_query(user_query)
-    db_results = await execute_query(db, sql_query)
-    answer = await synthesize_answer(user_query, db_results)
-    return answer
+            if not results:
+                results = await fallback_keyword_search(db, sub_query)
+
+            for row in results:
+                row_id = row.get("id")
+                if row_id not in seen_ids:
+                    seen_ids.add(row_id)
+                    all_results.append(row)
+
+        return await synthesize_answer(query, all_results)
+    except Exception as e:
+        logger.error(f"Error in ask_question: {e}")
+        return "Произошла ошибка при обработке запроса."

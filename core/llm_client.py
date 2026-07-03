@@ -5,7 +5,7 @@ import httpx
 
 API_KEY = os.getenv("LLM_API_KEY", "AQVNwqXsNnE8tVQMkNq5f-6-oGBiduFg7FLxHqFv")
 FOLDER_ID = os.getenv("YANDEX_FOLDER_ID", "b1ggusvist6c2sia1dno")
-MODEL_URI = f"gpt://{FOLDER_ID}/yandexgpt/latest"
+MODEL_URI = f"gpt://{FOLDER_ID}/yandexgpt-lite/latest"
 
 
 async def ask_llm_json(system_prompt: str, user_text: str) -> str:

@@ -1,8 +1,9 @@
 __pycache__/
 *.pyc
-# .env
+.env
 venv/
 env/
-# knowledge_base.db
 sample_data/
 app.log
+.DS_Store
+logs/
