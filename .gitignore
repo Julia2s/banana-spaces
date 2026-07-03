@@ -5,3 +5,4 @@ venv/
 env/
 # knowledge_base.db
 sample_data/
+app.log
