@@ -1,4 +1,4 @@
-# Alloy: R&D Knowledge Graph & Search Engine
+# R&D Knowledge Graph & Search Engine
 
 ## Архитектура проекта
 
