@@ -1,7 +1,5 @@
 # R&D Knowledge Graph & Search Engine
 
----
-
 ## Архитектура
 
 *   **`core/`** — Бизнес-логика и ИИ:
