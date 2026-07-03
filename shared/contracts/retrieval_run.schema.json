@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scientific-tangle.local/contracts/retrieval_run.schema.json",
+  "title": "RetrievalRunPayload",
+  "type": "object",
+  "required": [
+    "run_id",
+    "query_ir",
+    "evidence_bundle",
+    "created_at"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "query_ir": {
+      "$ref": "query_ir.schema.json"
+    },
+    "evidence_bundle": {
+      "$ref": "evidence_bundle.schema.json"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scientific-tangle.local/contracts/query_ir.schema.json",
+  "title": "QueryIR",
+  "type": "object",
+  "required": [
+    "query_id",
+    "question",
+    "goal",
+    "entities",
+    "numeric_constraints",
+    "geo_scope",
+    "time_range",
+    "source_types",
+    "access_scope",
+    "analysis_flags"
+  ],
+  "properties": {
+    "query_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "mention"
+        ],
+        "properties": {
+          "mention": {
+            "type": "string",
+            "minLength": 1
+          },
+          "entity_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "canonical_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "numeric_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "raw_text",
+          "dimension"
+        ],
+        "properties": {
+          "raw_text": {
+            "type": "string"
+          },
+          "operator": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "min": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dimension": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "geo_scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "time_range": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        }
+      },
+      "additionalProperties": false
+    },
+    "source_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "access_scope": {
+      "type": "object",
+      "required": [
+        "role",
+        "allowed_access_levels"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "allowed_access_levels": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "public",
+              "internal",
+              "confidential",
+              "restricted"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "analysis_flags": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "need_table",
+          "need_graph",
+          "need_gaps",
+          "need_conflicts",
+          "need_experts",
+          "need_export"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

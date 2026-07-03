@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scientific-tangle.local/contracts/answer_payload.schema.json",
+  "title": "AnswerPayload",
+  "type": "object",
+  "required": [
+    "query_id",
+    "answer_text",
+    "evidence_table",
+    "source_links",
+    "graph_subgraph",
+    "gaps",
+    "conflicts",
+    "confidence_summary",
+    "warnings",
+    "generated_at"
+  ],
+  "properties": {
+    "query_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "answer_text": {
+      "type": "string"
+    },
+    "evidence_table": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "source_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_span_id",
+          "document_id",
+          "label"
+        ],
+        "properties": {
+          "source_span_id": {
+            "type": "string"
+          },
+          "document_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "graph_subgraph": {
+      "type": "object",
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "confidence_summary": {
+      "type": "object"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

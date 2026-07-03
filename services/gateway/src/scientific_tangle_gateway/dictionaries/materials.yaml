@@ -1,0 +1,86 @@
+materials:
+  # Металлы
+  - name: никель
+    aliases: ["nickel", "ni", "niso4", "niso4·7h2o", "сульфат никеля"]
+    entity_type: material
+    chemical_formula: Ni
+  - name: медь
+    aliases: ["copper", "cu", "cuso4", "сульфат меди"]
+    entity_type: material
+    chemical_formula: Cu
+  - name: кобальт
+    aliases: ["cobalt", "co"]
+    entity_type: material
+    chemical_formula: Co
+  - name: железо
+    aliases: ["iron", "fe"]
+    entity_type: material
+    chemical_formula: Fe
+  - name: золото
+    aliases: ["gold", "au"]
+    entity_type: material
+    chemical_formula: Au
+  - name: серебро
+    aliases: ["silver", "ag"]
+    entity_type: material
+    chemical_formula: Ag
+  - name: платина
+    aliases: ["platinum", "pt"]
+    entity_type: material
+    chemical_formula: Pt
+  - name: палладий
+    aliases: ["palladium", "pd"]
+    entity_type: material
+    chemical_formula: Pd
+
+  # Соли и реагенты
+  - name: сульфат
+    aliases: ["sulfate", "so4", "so42-"]
+    entity_type: material
+    chemical_formula: SO4
+  - name: хлорид
+    aliases: ["chloride", "cl", "cl-"]
+    entity_type: material
+    chemical_formula: Cl
+  - name: кальций
+    aliases: ["calcium", "ca", "ca2+"]
+    entity_type: material
+    chemical_formula: Ca
+  - name: магний
+    aliases: ["magnesium", "mg", "mg2+"]
+    entity_type: material
+    chemical_formula: Mg
+  - name: натрий
+    aliases: ["sodium", "na", "na+"]
+    entity_type: material
+    chemical_formula: Na
+
+  # Промежуточные продукты
+  - name: штейн
+    aliases: ["matte"]
+    entity_type: material
+  - name: шлак
+    aliases: ["slag"]
+    entity_type: material
+  - name: католит
+    aliases: ["catholyte"]
+    entity_type: material
+  - name: анолит
+    aliases: ["anolyte"]
+    entity_type: material
+  - name: техногенный гипс
+    aliases: ["technogenic gypsum", "гипс техногенный"]
+    entity_type: material
+
+  # Воды
+  - name: шахтная вода
+    aliases: ["mine water", "шахтные воды"]
+    entity_type: material
+  - name: католит никеля
+    aliases: ["nickel catholyte"]
+    entity_type: material
+
+  # МПГ (металлы платиновой группы)
+  - name: МПГ
+    aliases: ["pgm", "platinum group metals", "металлы платиновой группы"]
+    entity_type: material

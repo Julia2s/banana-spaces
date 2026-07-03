@@ -1,0 +1,49 @@
+processes:
+  - name: электроэкстракция
+    aliases: ["electrowinning", "электролитическое осаждение", "ee"]
+    entity_type: process
+  - name: электровыщелачивание
+    aliases: ["electroleaching"]
+    entity_type: process
+  - name: кучное выщелачивание
+    aliases: ["heap leaching", "кв", "hl"]
+    entity_type: process
+  - name: обессоливание
+    aliases: ["desalination", "desalting", "обессоливание воды"]
+    entity_type: process
+  - name: обратный осмос
+    aliases: ["reverse osmosis", "ro"]
+    entity_type: process
+  - name: нанофильтрация
+    aliases: ["nanofiltration", "nf"]
+    entity_type: process
+  - name: ионный обмен
+    aliases: ["ion exchange", "ix", "ie"]
+    entity_type: process
+  - name: диализ
+    aliases: ["dialysis", "электродиализ", "electrodialysis", "ed"]
+    entity_type: process
+  - name: плавка
+    aliases: ["melting", "smelting"]
+    entity_type: process
+  - name: печь взвешенной плавки
+    aliases: ["пвп", "fluidized bed furnace", "fbf", "flash smelting"]
+    entity_type: process
+  - name: закачка шахтных вод
+    aliases: ["mine water injection", "обратная закачка"]
+    entity_type: process
+  - name: циркуляция католита
+    aliases: ["catholyte circulation", "catholyte recirculation"]
+    entity_type: process
+  - name: выщелачивание
+    aliases: ["leaching"]
+    entity_type: process
+  - name: флотация
+    aliases: ["flotation"]
+    entity_type: process
+  - name: газоочистка
+    aliases: ["gas cleaning", "gas treatment"]
+    entity_type: process
+  - name: удаление сернистого газа
+    aliases: ["so2 removal", "desulfurization", "удаление so₂"]
+    entity_type: process
