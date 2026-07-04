@@ -8,10 +8,19 @@ from core.logger import logger
 from core.prompts import DECOMPOSE_PROMPT, SQL_GENERATION_PROMPT, SYNTHESIS_PROMPT
 
 
+def extract_json_substring(text_data: str) -> str:
+    start = text_data.find("{")
+    end = text_data.rfind("}")
+    if start != -1 and end != -1:
+        return text_data[start : end + 1]
+    return text_data
+
+
 async def decompose_query(user_query: str) -> list:
     response = await ask_llm_json(system_prompt=DECOMPOSE_PROMPT, user_text=user_query)
     try:
-        queries = json.loads(response).get("sub_queries", [user_query])
+        cleaned = extract_json_substring(response)
+        queries = json.loads(cleaned).get("sub_queries", [user_query])
         logger.info(f"Decompose: {queries}")
         return queries
     except Exception:
@@ -21,7 +30,8 @@ async def decompose_query(user_query: str) -> list:
 async def get_sql_from_query(user_query: str) -> str:
     response = await ask_llm_json(system_prompt=SQL_GENERATION_PROMPT, user_text=user_query)
     try:
-        sql = json.loads(response).get("sql_query", "")
+        cleaned = extract_json_substring(response)
+        sql = json.loads(cleaned).get("sql_query", "")
         sql = sql.replace("LOWER(material)", "material_lower")
         sql = sql.replace("LOWER(process)", "process_lower")
         sql = sql.replace("LOWER(outcome)", "outcome_lower")
@@ -35,6 +45,13 @@ async def get_sql_from_query(user_query: str) -> str:
 async def execute_query(db: AsyncSession, sql_query: str) -> list:
     if not sql_query:
         return []
+
+    query_upper = sql_query.upper()
+    for forbidden in ["DELETE", "DROP", "UPDATE", "INSERT", "ALTER", "TRUNCATE"]:
+        if forbidden in query_upper:
+            logger.warning(f"Blocked SQL Injection attempt: {sql_query}")
+            return []
+
     try:
         result = await db.execute(text(sql_query))
         rows = result.fetchall()
@@ -74,7 +91,7 @@ def format_local_results(grouped_results: list) -> str:
         sub_query = group["sub_query"]
         results = group["results"]
 
-        text += f'### 🔍 По запросу: *"{sub_query}"*\n'
+        text += f"### 🔍 По запросу: *{sub_query}*\n"
         if not results:
             text += "└ *Информации в базе данных пока нет.*\n\n"
             continue
@@ -89,13 +106,13 @@ def format_local_results(grouped_results: list) -> str:
     return text
 
 
-async def synthesize_answer(user_query: str, grouped_results: list) -> str:
-    total_results = sum(len(g["results"]) for g in grouped_results)
+async def synthesize_answer(user_query: str, db_results: list) -> str:
+    total_results = sum(len(g["results"]) for g in db_results)
     if total_results == 0:
         return "Не найдено информации по вашему запросу."
 
     flat_results = []
-    for g in grouped_results:
+    for g in db_results:
         flat_results.extend(g["results"])
 
     context = str(flat_results)[:8000]
@@ -104,7 +121,7 @@ async def synthesize_answer(user_query: str, grouped_results: list) -> str:
     )
 
     if not response or response.strip() == "{}" or response.strip() == "":
-        return format_local_results(grouped_results)
+        return format_local_results(db_results)
 
     return response.strip()
 
