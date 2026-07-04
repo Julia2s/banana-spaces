@@ -1,4 +1,5 @@
 import fitz
+from docx import Document
 
 
 def extract_text_from_pdf(file_path: str) -> str:
@@ -10,3 +11,11 @@ def extract_text_from_pdf(file_path: str) -> str:
     except Exception:
         pass
     return text
+
+
+def extract_text_from_docx(file_path: str) -> str:
+    try:
+        doc = Document(file_path)
+        return "\n".join([p.text for p in doc.paragraphs])
+    except Exception:
+        return ""

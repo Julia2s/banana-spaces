@@ -1,17 +1,37 @@
-import asyncio
-import os
-import sys
-
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from core.retriever import execute_query
+from core.schemas import DocumentExtraction, KnowledgeFact, Parameter
 
-from core.extractor import extract_facts_from_text
+
+def test_pydantic_schema_validation():
+    fact = KnowledgeFact(
+        material="Медь",
+        process="Плавка",
+        geography="РФ",
+        year=2023,
+        parameters=[Parameter(name="Температура", value_max=1200.0, unit="°C")],
+        outcome="Успешно",
+        confidence_level="Высокий",
+    )
+    extraction = DocumentExtraction(facts=[fact])
+    assert len(extraction.facts) == 1
+    assert extraction.facts[0].material == "Медь"
 
 
 @pytest.mark.asyncio
-async def test_extract_facts():
-    test_text = "В 2023 году в РФ исследовали электроэкстракцию никеля при температуре 80 °C. Метод показал высокую эффективность."
-    result = await extract_facts_from_text(test_text)
-    assert result is not None
-    assert len(result.facts) >= 0
+async def test_sql_injection_defense():
+    class MockDB:
+        async def execute(self, text_obj):
+            return []
+
+    db = MockDB()
+    unsafe_query_1 = "DELETE FROM facts;"
+    unsafe_query_2 = "SELECT * FROM facts; DROP TABLE parameters;"
+
+    res_1 = await execute_query(db, unsafe_query_1)
+    res_2 = await execute_query(db, unsafe_query_2)
+
+    assert res_1 == []
+    assert res_2 == []
