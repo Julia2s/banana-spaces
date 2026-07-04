@@ -78,5 +78,5 @@ def test_fact_rejects_invalid_year_type():
 
 def test_empty_extraction():
     extraction = DocumentExtraction(facts=[])
-    
+
     assert extraction.facts == []

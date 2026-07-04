@@ -1,5 +1,6 @@
 import os
 import sqlite3
+
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -13,6 +14,7 @@ with col2:
     node_limit = st.slider("Количество узлов", min_value=10, max_value=100, value=40, step=10)
 with col3:
     show_docs = st.checkbox("Показывать документы", value=True)
+
 
 @st.cache_data(ttl=60)
 def load_facts(limit: int, search_term: str):
@@ -28,16 +30,16 @@ def load_facts(limit: int, search_term: str):
 
     if search_term:
         term = f"%{search_term.lower()}%"
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT material, process, source_file, outcome FROM facts
             WHERE LOWER(material) LIKE ? OR LOWER(process) LIKE ? OR LOWER(outcome) LIKE ?
             LIMIT ?
-        """, (term, term, term, limit))
-    else:
-        cursor.execute(
-            "SELECT material, process, source_file, outcome FROM facts LIMIT ?",
-            (limit,)
+        """,
+            (term, term, term, limit),
         )
+    else:
+        cursor.execute("SELECT material, process, source_file, outcome FROM facts LIMIT ?", (limit,))
 
     rows = cursor.fetchall()
     conn.close()
@@ -54,6 +56,7 @@ nodes_data = {}
 edges_data = []
 node_id = 0
 
+
 def get_or_create(label: str, group: str, title: str = "") -> int:
     global node_id
     key = (label, group)
@@ -61,6 +64,7 @@ def get_or_create(label: str, group: str, title: str = "") -> int:
         nodes_data[key] = {"id": node_id, "label": label, "group": group, "title": title}
         node_id += 1
     return nodes_data[key]["id"]
+
 
 for material, process, source, outcome in rows:
     if not material or not process:
@@ -83,9 +87,21 @@ for material, process, source, outcome in rows:
 nodes_js = []
 for (label, group), info in nodes_data.items():
     color_map = {
-        "material": {"background": "#1f77b4", "border": "#aec7e8", "highlight": {"background": "#6baed6", "border": "#ffffff"}},
-        "process":  {"background": "#e07b39", "border": "#fdae6b", "highlight": {"background": "#fd8d3c", "border": "#ffffff"}},
-        "document": {"background": "#2ca02c", "border": "#98df8a", "highlight": {"background": "#41ab5d", "border": "#ffffff"}},
+        "material": {
+            "background": "#1f77b4",
+            "border": "#aec7e8",
+            "highlight": {"background": "#6baed6", "border": "#ffffff"},
+        },
+        "process": {
+            "background": "#e07b39",
+            "border": "#fdae6b",
+            "highlight": {"background": "#fd8d3c", "border": "#ffffff"},
+        },
+        "document": {
+            "background": "#2ca02c",
+            "border": "#98df8a",
+            "highlight": {"background": "#41ab5d", "border": "#ffffff"},
+        },
     }
     color = color_map.get(group, {"background": "#999", "border": "#ccc"})
     shape = {"material": "dot", "process": "diamond", "document": "square"}.get(group, "dot")
@@ -96,14 +112,10 @@ for (label, group), info in nodes_data.items():
     node_title = repr(info["title"])
     node_id_val = info["id"]
     nodes_js.append(
-        f'{{id:{node_id_val},label:{node_label},title:{node_title},'
-        f'color:{color_str},shape:"{shape}",size:{size}}}'
+        f"{{id:{node_id_val},label:{node_label},title:{node_title}," f'color:{color_str},shape:"{shape}",size:{size}}}'
     )
 
-edges_js = [
-    f'{{from:{e["from"]},to:{e["to"]},color:{{color:"#555",highlight:"#aaa"}}}}'
-    for e in edges_data
-]
+edges_js = [f'{{from:{e["from"]},to:{e["to"]},color:{{color:"#555",highlight:"#aaa"}}}}' for e in edges_data]
 
 html = f"""
 <!DOCTYPE html>
@@ -187,14 +199,16 @@ network.on("click", function(params) {{
 
 components.html(html, height=620, scrolling=False)
 
-st.markdown("""
+st.markdown(
+    """
 **Легенда:**
  **Синие круги** — Материалы и вещества &nbsp;|&nbsp;
  **Оранжевые ромбы** — Технологические процессы &nbsp;|&nbsp;
  **Зелёные квадраты** — Документы-источники
 
 *Кликните на узел чтобы увидеть подробности. Колесико мыши — зум.*
-""")
+"""
+)
 
 materials = sum(1 for (_, g), _ in nodes_data.items() if g == "material")
 processes = sum(1 for (_, g), _ in nodes_data.items() if g == "process")

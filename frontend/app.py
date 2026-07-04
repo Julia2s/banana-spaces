@@ -1,6 +1,8 @@
+import os
+
 import requests
 import streamlit as st
-import os
+
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/ask")
 
 st.set_page_config(page_title="R&D Assistant", layout="wide")

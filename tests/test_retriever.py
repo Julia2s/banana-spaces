@@ -19,11 +19,13 @@ async def test_execute_query_empty_sql(db_session):
 
 @pytest.mark.asyncio
 async def test_execute_query_valid_sql(db_session):
-    await db_session.execute(text(
-        "INSERT INTO facts (material, material_lower, process, process_lower, "
-        "geography, outcome, outcome_lower, confidence_level, source_file) "
-        "VALUES ('Медь', 'медь', 'Плавка', 'плавка', 'РФ', 'Успех', 'успех', 'Высокий', 'test.pdf')"
-    ))
+    await db_session.execute(
+        text(
+            "INSERT INTO facts (material, material_lower, process, process_lower, "
+            "geography, outcome, outcome_lower, confidence_level, source_file) "
+            "VALUES ('Медь', 'медь', 'Плавка', 'плавка', 'РФ', 'Успех', 'успех', 'Высокий', 'test.pdf')"
+        )
+    )
     await db_session.commit()
 
     result = await execute_query(db_session, "SELECT * FROM facts WHERE material = 'Медь'")
@@ -50,7 +52,7 @@ async def test_execute_query_sql_injection_attempt(db_session):
 @pytest.mark.asyncio
 async def test_decompose_query_valid(mock_llm):
     mock_llm.return_value = '{"sub_queries": ["температура плавки", "география"]}'
-    
+
     result = await decompose_query("Какая температура плавки меди в России?")
 
     assert result == ["температура плавки", "география"]
@@ -61,7 +63,7 @@ async def test_decompose_query_fallback(mock_llm):
     mock_llm.return_value = "not a json"
 
     result = await decompose_query("Простой запрос")
-    
+
     assert result == ["Простой запрос"]
 
 
@@ -78,7 +80,7 @@ async def test_get_sql_from_query_replaces_lower(mock_llm):
 @pytest.mark.asyncio
 async def test_get_sql_from_query_empty_on_error(mock_llm):
     mock_llm.return_value = "это не json"
-    
+
     sql = await get_sql_from_query("запрос")
 
     assert sql == ""
@@ -129,7 +131,7 @@ def test_format_local_results_with_data():
         }
     ]
     text = format_local_results(grouped)
-    
+
     assert "Медь" in text
     assert "Плавка" in text
     assert "test.pdf" in text
